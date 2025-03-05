@@ -1,0 +1,28 @@
+Name: Fatma Hassan
+Email: fatma.hassan@example.com
+Phone: +254 733 987 654
+LinkedIn: linkedin.com/in/fatma-hassan
+
+Objective:
+Cybersecurity Analyst with a strong background in penetration testing, threat analysis, and incident response. Passionate about securing digital systems.
+
+Education:
+- Bachelor’s Degree in Cybersecurity, Kenyatta University (GPA: 3.5)
+
+Experience:
+- Cybersecurity Analyst, Equity Bank (2020-Present)
+  - Conducted security assessments and penetration tests.
+  - Monitored SIEM tools for threat detection.
+  - Responded to cybersecurity incidents and vulnerabilities.
+
+Skills:
+- Network Security, SIEM, Ethical Hacking
+- Incident Response, Risk Assessment
+- Cloud Security (AWS, Azure)
+
+Certifications:
+- Certified Ethical Hacker (CEH)
+- CompTIA Security+
+
+Keywords:
+Cybersecurity, Penetration Testing, Network Security, SIEM

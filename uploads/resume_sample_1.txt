@@ -1,0 +1,28 @@
+Name: John Doe
+Email: johndoe@example.com
+Phone: +254 712 345 678
+LinkedIn: linkedin.com/in/johndoe
+
+Objective:
+Data Analyst with 3 years of experience in SQL, Python, and Excel. Passionate about data visualization and insights.
+
+Education:
+- Bachelor’s Degree in Statistics, University of Nairobi (GPA: 3.7)
+
+Experience:
+- Data Analyst, ABC Corporation (2021-Present)
+  - Analyzed large datasets using SQL and Python.
+  - Created interactive dashboards in Tableau.
+  - Conducted statistical analysis for business insights.
+
+Skills:
+- SQL, Python, Excel
+- Tableau, Power BI, Statistics
+- Machine Learning (Pandas, NumPy)
+
+Certifications:
+- Google Data Analytics Professional Certificate
+- Tableau Desktop Specialist
+
+Keywords:
+Data Analytics, SQL, Python, Machine Learning

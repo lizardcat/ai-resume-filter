@@ -1,0 +1,28 @@
+Name: Jane Smith
+Email: janesmith@example.com
+Phone: +254 799 876 543
+GitHub: github.com/janesmith
+
+Objective:
+Skilled Software Engineer with expertise in Java, Spring Boot, and Git. Interested in backend development and scalable systems.
+
+Education:
+- Bachelor’s Degree in Computer Science, Strathmore University (GPA: 3.5)
+
+Experience:
+- Software Engineer, XYZ Tech (2020-Present)
+  - Developed microservices using Java & Spring Boot.
+  - Implemented CI/CD pipelines with Docker & Kubernetes.
+  - Built REST APIs and optimized performance.
+
+Skills:
+- Java, Spring Boot, Git
+- Docker, Kubernetes, Microservices
+- REST APIs, SQL, NoSQL Databases
+
+Certifications:
+- Oracle Certified Java Programmer (OCP)
+- AWS Certified Developer – Associate
+
+Keywords:
+Software Development, Java, Spring Boot, CI/CD

@@ -1,0 +1,28 @@
+Name: Michael Kimani
+Email: m.kimani@example.com
+Phone: +254 711 654 321
+LinkedIn: linkedin.com/in/mkimani
+
+Objective:
+Cloud Engineer with expertise in AWS, Terraform, and Networking. Passionate about cloud security and automation.
+
+Education:
+- Bachelor’s Degree in Information Technology, JKUAT (GPA: 3.6)
+
+Experience:
+- Cloud Engineer, CloudTech Solutions (2019-Present)
+  - Designed cloud infrastructure on AWS using Terraform.
+  - Implemented network security and IAM policies.
+  - Migrated on-prem applications to AWS.
+
+Skills:
+- AWS, Terraform, Networking
+- Azure, GCP, Linux
+- Kubernetes, DevOps Tools
+
+Certifications:
+- AWS Certified Solutions Architect – Associate
+- Microsoft Azure Administrator (AZ-104)
+
+Keywords:
+Cloud Computing, AWS, Terraform, DevOps, Kubernetes

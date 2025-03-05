@@ -1,0 +1,28 @@
+Name: Brian Mwangi
+Email: brian.mwangi@example.com
+Phone: +254 712 345 678
+LinkedIn: linkedin.com/in/brianmwangi
+
+Objective:
+Results-driven Data Analyst with 3 years of experience in SQL, Python, and Excel. Strong background in statistical analysis and data visualization.
+
+Education:
+- Bachelor’s Degree in Statistics, University of Nairobi (GPA: 3.8)
+
+Experience:
+- Data Analyst, Safaricom PLC (2021-Present)
+  - Analyzed large datasets using SQL and Python.
+  - Created interactive dashboards in Power BI.
+  - Conducted statistical modeling for business insights.
+
+Skills:
+- SQL, Python, Excel
+- Tableau, Power BI, ETL
+- Machine Learning (Pandas, NumPy, Scikit-Learn)
+
+Certifications:
+- Google Data Analytics Professional Certificate
+- Microsoft Power BI Certified
+
+Keywords:
+Data Analytics, SQL, Python, Power BI, Machine Learning

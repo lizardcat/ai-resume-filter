@@ -1,0 +1,28 @@
+Name: Diana Wanjiru
+Email: diana.wanjiru@example.com
+Phone: +254 720 456 789
+LinkedIn: linkedin.com/in/dianawanjiru
+
+Objective:
+Product Manager with experience in Agile methodologies, market research, and product development. Passionate about building user-focused solutions.
+
+Education:
+- Bachelor’s Degree in Business Information Technology, USIU-Africa (GPA: 3.4)
+
+Experience:
+- Product Manager, Jumia Kenya (2021-Present)
+  - Led cross-functional teams to develop e-commerce features.
+  - Conducted A/B testing for product optimizations.
+  - Managed product roadmap and user feedback loops.
+
+Skills:
+- Agile, Scrum, Market Research
+- Stakeholder Management, UX/UI Design
+- Data-Driven Decision Making, A/B Testing
+
+Certifications:
+- Certified Scrum Product Owner (CSPO)
+- Google UX Design Certificate
+
+Keywords:
+Product Management, Agile, Scrum, A/B Testing, UX Design
