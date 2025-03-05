@@ -20,7 +20,7 @@ This resume filtering system helps recruiters screen job applications based on p
 
 ### **1️. Clone the Repository**
 ```sh
-git clone https://github.com/YOUR_GITHUB_USERNAME/ai-resume-filter.git
+git clone https://github.com/lizardcat/ai-resume-filter.git
 cd ai-resume-filter
 ```
 ### **2️. Install Dependencies**
