@@ -1,123 +1,159 @@
-/* USIU-Africa Colors */
+/* Professional Color Scheme */
 :root {
-    --primary-blue: #002147;
-    --gold-yellow: #FFC72C;
-    --light-gray: #F5F5F5;
-    --white: #FFFFFF;
-    --dark-gray: #444;
+    --primary-color: #2C3E50;
+    --accent-color: #3498DB;
+    --background-color: #F8F9FA;
+    --text-color: #333;
+    --border-color: #DDD;
 }
 
-/* Banner */
-.banner {
-    background: var(--primary-blue);
-    color: var(--gold-yellow);
-    text-align: center;
+/* General Styling */
+body {
+    background: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
     padding: 20px;
-    font-size: 24px;
-    font-weight: bold;
 }
 
-/* Page Wrapper */
+/* Centered and Compact Form Container */
 .container {
-    max-width: 800px;
-    margin: auto;
-    background: var(--white);
+    max-width: 500px !important;  /* Limits the width on larger screens */
+    width: 100%;       /* Ensures responsiveness */
+    background: white;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    margin: auto;
 }
 
 /* Headings */
 h2 {
-    color: var(--primary-blue);
+    color: var(--primary-color);
     text-align: center;
+    font-size: 18px;
+    margin-bottom: 15px;
 }
 
-/* Forms */
-form {
-    background: var(--white);
-    padding: 15px;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
+/* Form Labels */
 label {
     font-weight: bold;
     display: block;
+    font-size: 14px;
     margin-top: 10px;
 }
 
+/* Inputs & Selects */
 input, select {
     width: 100%;
     padding: 8px;
     margin-top: 5px;
-    border: 1px solid var(--dark-gray);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
+    background: white;
+    color: var(--text-color);
+    font-size: 14px;
 }
 
 /* Buttons */
-input[type="submit"], .dropdown-btn {
-    background: var(--primary-blue);
-    color: var(--white);
+.btn {
     border: none;
-    padding: 10px;
-    font-size: 16px;
+    color: white;
+    padding: 8px;
+    font-size: 14px;
     cursor: pointer;
     border-radius: 5px;
-    margin-top: 10px;
-    display: block;
     width: 100%;
-    text-align: center;
 }
 
-input[type="submit"]:hover, .dropdown-btn:hover {
-    background: var(--gold-yellow);
-    color: var(--primary-blue);
+.btn-primary {
+    background: var(--primary-color);
 }
 
-/* Dropdown Content */
-.dropdown-content {
-    display: none;
-    background: var(--light-gray);
-    padding: 10px;
+.btn-primary:hover,
+.btn-success {
+    background: var(--accent-color);
+}
+
+.btn-success:hover {
+    background: var(--primary-color);
+}
+
+.btn-warning {
+    background: #F39C12;
+}
+
+.btn-warning:hover {
+    background: var(--primary-color);
+}
+
+/* Bootstrap Dropdown Styling */
+.dropdown-menu {
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 8px;
     border-radius: 5px;
-    margin-top: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.dropdown-content label {
-    display: block;
-    font-weight: normal;
-    padding: 5px;
+/* Checkboxes */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
 }
 
-/* Results Box */
+.form-check-input {
+    transform: scale(1.1);
+}
+
+/* Dropdown Button */
+.dropdown-toggle {
+    text-align: left;
+    background: var(--primary-color);
+    color: white;
+    font-size: 14px;
+    padding: 8px;
+}
+
+.dropdown-toggle:hover {
+    background: var(--accent-color);
+}
+
+/* Results & Upload Status */
 #results, #uploadStatus {
-    background: var(--white);
-    padding: 15px;
+    background: white;
+    padding: 12px;
     border-radius: 6px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
-}
-
-ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-ul li {
-    background: var(--gold-yellow);
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 5px;
-    color: var(--primary-blue);
-    font-weight: bold;
+    margin-top: 15px;
+    font-size: 14px;
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .container {
-        width: 90%;
+        max-width: 90%; /* Slightly wider for mobile users */
+        padding: 15px;
+    }
+
+    .btn {
+        font-size: 13px;
+        padding: 7px;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+
+    input, select {
+        font-size: 13px;
+        padding: 7px;
     }
 }
