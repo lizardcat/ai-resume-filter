@@ -34,11 +34,13 @@ document.getElementById("filterForm").addEventListener("submit", function(event)
     .then(response => response.json())
     .then(data => {
         let resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = "<h4>Matching Resumes:</h4>";
+        resultsDiv.innerHTML = "<h4>Matching Resumes (Ranked by AI Score):</h4>";
 
         if (data.matching_resumes.length > 0) {
             data.matching_resumes.forEach(resume => {
-                resultsDiv.innerHTML += `<p>${resume}</p>`;
+                let filename = resume[0];
+                let score = resume[1];
+                resultsDiv.innerHTML += `<p><strong>${filename}</strong> - AI Score: ${score}%</p>`;
             });
         } else {
             resultsDiv.innerHTML += "<p>No matching resumes found.</p>";
@@ -49,6 +51,7 @@ document.getElementById("filterForm").addEventListener("submit", function(event)
         document.getElementById("results").innerHTML = "<p style='color: red;'>Filtering failed!</p>";
     });
 });
+
 
 // Global variable to store job roles
 let jobRoles = {};

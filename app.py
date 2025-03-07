@@ -1,7 +1,10 @@
 import os
 import re
+import datetime
 import PyPDF2
 import docx
+import spacy
+import pickle
 from flask import Flask, render_template, request, send_from_directory, jsonify
 from werkzeug.utils import secure_filename
 from fuzzywuzzy import fuzz
@@ -46,14 +49,31 @@ def extract_text_from_resume(filepath):
     return text.strip()
 
 # Function to extract details from resumes
+
+nlp = spacy.load("en_core_web_sm")  # Load spaCy NLP model
+
 def extract_resume_details(text):
     gpa_match = re.search(r"GPA[: ]?(\d\.\d)", text, re.IGNORECASE)
     experience_match = re.search(r"(\d+)\s*years? of experience", text, re.IGNORECASE)
-    skills_match = re.findall(r"\b[A-Za-z+#]+\b", text)
+    date_match = re.findall(r"(\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b \d{4})", text)
 
+    # Extract GPA
     gpa = float(gpa_match.group(1)) if gpa_match else 0.0
-    experience = int(experience_match.group(1)) if experience_match else 0
-    skills = [skill.lower() for skill in skills_match] if skills_match else []
+
+    # Extract Experience (if it's explicitly mentioned)
+    if experience_match:
+        experience = int(experience_match.group(1))
+    elif len(date_match) >= 2:  # Check if two dates are found (start & end dates)
+        start_year = int(date_match[0].split()[1])  # Extract year from "Month Year"
+        end_year = datetime.datetime.now().year if "Present" in text else int(date_match[1].split()[1])
+        experience = max(0, end_year - start_year)  # Calculate experience in years
+    else:
+        experience = 0  # Default if no valid experience is found
+
+    # Extract skills (Simple tokenization)
+    skills_match = re.findall(r"\b[A-Za-z+#]+\b", text)
+    skills = [skill.lower() for skill in skills_match]
+
     return {"gpa": gpa, "experience": experience, "skills": skills}
 
 @app.route("/")
@@ -77,13 +97,22 @@ def upload_file():
 
     return jsonify({"uploads": upload_results})
 
+# Load trained ML model and vectorizer
+with open("resume_model.pkl", "rb") as f:
+    model = pickle.load(f)
+
+with open("vectorizer.pkl", "rb") as f:
+    vectorizer = pickle.load(f)
+
 @app.route("/filter", methods=["POST"])
 def filter_resumes():
-    gpa_cutoff = float(request.form.get("gpa_cutoff", 0))
-    experience_cutoff = int(request.form.get("experience", 0))
-    must_have = [skill.lower() for skill in request.form.getlist("must_have")]
+    gpa_cutoff = float(request.form.get("gpa_cutoff", 0) or 0)
+    experience_cutoff = int(request.form.get("experience", 0) or 0)
+    must_have = [skill.lower() for skill in request.form.getlist("must_have") if skill]
 
     matching_resumes = []
+    resume_scores = {}
+
     for filename in os.listdir(UPLOAD_FOLDER):
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         resume_text = extract_text_from_resume(filepath)
@@ -93,20 +122,25 @@ def filter_resumes():
         extracted_gpa = resume_details["gpa"]
         extracted_experience = resume_details["experience"]
 
-        # Check GPA & experience
         meets_gpa = extracted_gpa >= gpa_cutoff
         meets_experience = extracted_experience >= experience_cutoff
 
-        # Use fuzzy matching for must-have skills (no strict keyword matching)
-        has_must_have_skills = all(
-            any(fuzz.partial_ratio(skill, extracted_skill) > 70 for extracted_skill in extracted_skills)
-            for skill in must_have
+        has_must_have_skills = True if not must_have else all(
+            any(skill in extracted_skills for skill in must_have) for _ in must_have
         )
 
         if meets_gpa and meets_experience and has_must_have_skills:
-            matching_resumes.append(filename)
+            # 🔹 AI Resume Scoring
+            resume_vector = vectorizer.transform([resume_text])
+            score = model.predict_proba(resume_vector)[0][1]  # Probability of being hired
 
-    return jsonify({"matching_resumes": matching_resumes})
+            matching_resumes.append(filename)
+            resume_scores[filename] = round(score * 100, 2)  # Convert to %
+
+    # Sort resumes by AI Score (higher is better)
+    sorted_resumes = sorted(resume_scores.items(), key=lambda x: x[1], reverse=True)
+
+    return jsonify({"matching_resumes": sorted_resumes})
 
 
 @app.route("/uploads/<filename>")
