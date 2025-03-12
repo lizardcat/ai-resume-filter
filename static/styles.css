@@ -1,4 +1,3 @@
-/* USIU-Africa Colors */
 :root {
     --primary-blue: #002147;
     --gold-yellow: #FFC72C;
@@ -6,8 +5,6 @@
     --white: #FFFFFF;
     --dark-gray: #444;
 }
-
-/* Banner */
 .banner {
     background: var(--primary-blue);
     color: var(--gold-yellow);
@@ -16,8 +13,6 @@
     font-size: 24px;
     font-weight: bold;
 }
-
-/* Page Wrapper */
 .container {
     max-width: 800px;
     margin: auto;
@@ -26,14 +21,10 @@
     border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
-
-/* Headings */
 h2 {
     color: var(--primary-blue);
     text-align: center;
 }
-
-/* Forms */
 form {
     background: var(--white);
     padding: 15px;
@@ -41,23 +32,21 @@ form {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
-
 label {
     font-weight: bold;
     display: block;
     margin-top: 10px;
 }
-
-input, select {
+input,
+select {
     width: 100%;
     padding: 8px;
     margin-top: 5px;
     border: 1px solid var(--dark-gray);
     border-radius: 5px;
 }
-
-/* Buttons */
-input[type="submit"], .dropdown-btn {
+input[type="submit"],
+.dropdown-btn {
     background: var(--primary-blue);
     color: var(--white);
     border: none;
@@ -70,13 +59,11 @@ input[type="submit"], .dropdown-btn {
     width: 100%;
     text-align: center;
 }
-
-input[type="submit"]:hover, .dropdown-btn:hover {
+input[type="submit"]:hover,
+.dropdown-btn:hover {
     background: var(--gold-yellow);
     color: var(--primary-blue);
 }
-
-/* Dropdown Content */
 .dropdown-content {
     display: none;
     background: var(--light-gray);
@@ -85,27 +72,27 @@ input[type="submit"]:hover, .dropdown-btn:hover {
     margin-top: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
 .dropdown-content label {
-    display: block;
-    font-weight: normal;
-    padding: 5px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
 }
-
-/* Results Box */
-#results, #uploadStatus {
+.dropdown-content input[type="checkbox"],
+.dropdown-content input[type="radio"] {
+    margin-right: 8px;
+}
+#results,
+#uploadStatus {
     background: var(--white);
     padding: 15px;
     border-radius: 6px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
 }
-
 ul {
     list-style-type: none;
     padding: 0;
 }
-
 ul li {
     background: var(--gold-yellow);
     padding: 10px;
@@ -114,8 +101,6 @@ ul li {
     color: var(--primary-blue);
     font-weight: bold;
 }
-
-/* Responsive */
 @media (max-width: 600px) {
     .container {
         width: 90%;
