@@ -4,3 +4,4 @@ python-docx
 werkzeug
 fuzzywuzzy
 python-Levenshtein
+nltk
