@@ -8,6 +8,10 @@ from fuzzywuzzy import fuzz
 import spacy
 from nltk import pos_tag, word_tokenize
 from nltk.corpus import stopwords
+import PyPDF2
+import docx
+from pdfminer.high_level import extract_text as pdfminer_extract_text
+import fitz  # PyMuPDF
 
 app = Flask(__name__)
 
@@ -146,24 +150,47 @@ filtering_rules = {
 }
 
 # Function to extract text from resumes
+
+
 def extract_text_from_resume(filepath):
     file_ext = filepath.rsplit(".", 1)[1].lower()
     text = ""
 
-    if file_ext == "pdf":
-        with open(filepath, "rb") as pdf_file:
-            reader = PyPDF2.PdfReader(pdf_file)
-            for page in reader.pages:
-                text += page.extract_text() + "\n"
+    try:
+        if file_ext == "pdf":
+            # Try PyPDF2 first
+            try:
+                with open(filepath, "rb") as pdf_file:
+                    reader = PyPDF2.PdfReader(pdf_file)
+                    for page in reader.pages:
+                        text += page.extract_text() + "\n"
+            except PyPDF2.PdfReadError:
+                print(f"PyPDF2 failed to read {filepath}. Trying pdfminer.six...")
+                # Fallback to pdfminer.six
+                text = pdfminer_extract_text(filepath)
+            except Exception as e:
+                print(f"Unexpected error with PyPDF2: {e}. Trying PyMuPDF...")
+                # Fallback to PyMuPDF
+                with fitz.open(filepath) as doc:
+                    for page in doc:
+                        text += page.get_text() + "\n"
 
-    elif file_ext == "docx":
-        doc = docx.Document(filepath)
-        for para in doc.paragraphs:
-            text += para.text + "\n"
+        elif file_ext == "docx":
+            doc = docx.Document(filepath)
+            for para in doc.paragraphs:
+                text += para.text + "\n"
 
-    elif file_ext == "txt":
-        with open(filepath, "r", encoding="utf-8") as txt_file:
-            text = txt_file.read()
+        elif file_ext == "txt":
+            with open(filepath, "r", encoding="utf-8") as txt_file:
+                text = txt_file.read()
+
+        else:
+            print(f"Unsupported file format: {file_ext}")
+            return None
+
+    except Exception as e:
+        print(f"Error processing {filepath}: {e}")
+        return None
 
     return text.strip()
 
