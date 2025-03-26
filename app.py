@@ -5,6 +5,13 @@ import docx
 from flask import Flask, render_template, request, send_from_directory, jsonify
 from werkzeug.utils import secure_filename
 from fuzzywuzzy import fuzz
+import spacy
+from nltk import pos_tag, word_tokenize
+from nltk.corpus import stopwords
+import PyPDF2
+import docx
+from pdfminer.high_level import extract_text as pdfminer_extract_text
+import fitz  # PyMuPDF
 
 app = Flask(__name__)
 
@@ -15,6 +22,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Function to check allowed file types
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -142,37 +150,111 @@ filtering_rules = {
 }
 
 # Function to extract text from resumes
+
+
 def extract_text_from_resume(filepath):
     file_ext = filepath.rsplit(".", 1)[1].lower()
     text = ""
 
-    if file_ext == "pdf":
-        with open(filepath, "rb") as pdf_file:
-            reader = PyPDF2.PdfReader(pdf_file)
-            for page in reader.pages:
-                text += page.extract_text() + "\n"
+    try:
+        if file_ext == "pdf":
+            # Try PyPDF2 first
+            try:
+                with open(filepath, "rb") as pdf_file:
+                    reader = PyPDF2.PdfReader(pdf_file)
+                    for page in reader.pages:
+                        text += page.extract_text() + "\n"
+            except PyPDF2.PdfReadError:
+                print(f"PyPDF2 failed to read {filepath}. Trying pdfminer.six...")
+                # Fallback to pdfminer.six
+                text = pdfminer_extract_text(filepath)
+            except Exception as e:
+                print(f"Unexpected error with PyPDF2: {e}. Trying PyMuPDF...")
+                # Fallback to PyMuPDF
+                with fitz.open(filepath) as doc:
+                    for page in doc:
+                        text += page.get_text() + "\n"
 
-    elif file_ext == "docx":
-        doc = docx.Document(filepath)
-        for para in doc.paragraphs:
-            text += para.text + "\n"
+        elif file_ext == "docx":
+            doc = docx.Document(filepath)
+            for para in doc.paragraphs:
+                text += para.text + "\n"
 
-    elif file_ext == "txt":
-        with open(filepath, "r", encoding="utf-8") as txt_file:
-            text = txt_file.read()
+        elif file_ext == "txt":
+            with open(filepath, "r", encoding="utf-8") as txt_file:
+                text = txt_file.read()
+
+        else:
+            print(f"Unsupported file format: {file_ext}")
+            return None
+
+    except Exception as e:
+        print(f"Error processing {filepath}: {e}")
+        return None
 
     return text.strip()
 
 # Function to extract details from resumes
 def extract_resume_details(text):
-    gpa_match = re.search(r"GPA[: ]?(\d\.\d)", text, re.IGNORECASE)
-    experience_match = re.search(r"(\d+)\s*years? of experience", text, re.IGNORECASE)
-    skills_match = re.findall(r"\b[A-Za-z+#]+\b", text)
+    """
+    Extract GPA, experience, and skills from resume text using NLP.
+    
+    :param text: Resume text as a string.
+    :return: Dictionary containing GPA, experience, and skills.
+    """
+    # Loading spaCy's pre-trained model for named entity recognition
+    nlp = spacy.load("en_core_web_sm")
 
-    gpa = float(gpa_match.group(1)) if gpa_match else 0.0
-    experience = int(experience_match.group(1)) if experience_match else 0
-    skills = [skill.lower() for skill in skills_match]
+    # Extract GPA using regex
+    def extract_gpa(text):
+        gpa_patterns = [
+            r"gpa\s*[:]?\s*(\d\.\d)",  # Matches "GPA: 3.5" or "GPA 3.5"
+            r"grade point average\s*[:]?\s*(\d\.\d)",  # Matches "Grade Point Average: 3.5"
+            r"(\d\.\d)\s*gpa"  # Matches "3.5 GPA"
+        ]
+        for pattern in gpa_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                return float(match.group(1))
+        return 0.0  # Default if no GPA is found
 
+    # Extract years of experience using spaCy's NER
+    def extract_experience(text):
+        doc = nlp(text)
+        for ent in doc.ents:
+            if ent.label_ == "DATE" and "year" in ent.text.lower():
+                # Extract numeric value from the entity text
+                match = re.search(r"(\d+)", ent.text)
+                if match:
+                    return int(match.group(1))
+        return 0  # Default if no experience is found
+
+    # Extract skills using spaCy's NER and POS tagging
+    def extract_skills(text):
+        doc = nlp(text)
+        skills = set()
+        
+        # Extract skills from entities (e.g., "Python", "Java")
+        for ent in doc.ents:
+            if ent.label_ in ["ORG", "PRODUCT", "TECH"]:  # Customize labels as needed
+                skills.add(ent.text.lower())
+        
+        # Extract skills from POS tagging (e.g., nouns often represent skills)
+        tokens = word_tokenize(text)
+        tagged = pos_tag(tokens)
+        skills.update([word.lower() for word, pos in tagged if pos in ["NN", "NNS"]])  # Nouns
+        
+        # Filter out common stopwords
+        stop_words = set(stopwords.words('english'))
+        skills = [skill for skill in skills if skill not in stop_words]
+        
+        return list(skills)
+
+    # Extract details
+    gpa = extract_gpa(text)
+    experience = extract_experience(text)
+    skills = extract_skills(text)
+    
     return {"gpa": gpa, "experience": experience, "skills": skills}
 
 @app.route("/")
