@@ -10,52 +10,39 @@
             var role = document.getElementById("job_role").value;
             var mustHaveContainer = document.getElementById("must_have_container");
             var niceToHaveContainer = document.getElementById("nice_to_have_container");
-
             mustHaveContainer.innerHTML = "";
             niceToHaveContainer.innerHTML = "";
-
             var filteringRules = {{ roles | tojson }};
             var mustHaveSkills = filteringRules[role]["must_have"];
             var niceToHaveSkills = filteringRules[role]["nice_to_have"];
-
             mustHaveSkills.forEach(skill => {
                 var checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
                 checkbox.name = "must_have";
                 checkbox.value = skill;
-
                 var label = document.createElement("label");
                 label.appendChild(checkbox);
                 label.appendChild(document.createTextNode(skill));
-
                 mustHaveContainer.appendChild(label);
-                mustHaveContainer.appendChild(document.createElement("br"));
             });
-
             niceToHaveSkills.forEach(skill => {
                 var checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
                 checkbox.name = "nice_to_have";
                 checkbox.value = skill;
-
                 var label = document.createElement("label");
                 label.appendChild(checkbox);
                 label.appendChild(document.createTextNode(skill));
-
                 niceToHaveContainer.appendChild(label);
-                niceToHaveContainer.appendChild(document.createElement("br"));
             });
         }
-
         function toggleDropdown(id) {
             var dropdown = document.getElementById(id);
             dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
         }
-
         function uploadFiles(event) {
             event.preventDefault();
             let formData = new FormData(document.getElementById("uploadForm"));
-
             fetch("/upload", {
                 method: "POST",
                 body: formData
@@ -64,12 +51,11 @@
             .then(data => {
                 let uploadStatus = document.getElementById("uploadStatus");
                 uploadStatus.innerHTML = "<h3>Upload Results:</h3>";
-
                 if (data.uploads.length > 0) {
                     let list = document.createElement("ul");
                     data.uploads.forEach(file => {
                         let item = document.createElement("li");
-                        item.innerHTML = `<strong>${file.filename}</strong>: ${file.status}`;
+                        item.innerHTML = "<strong>" + file.filename + "</strong>: " + file.status;
                         list.appendChild(item);
                     });
                     uploadStatus.appendChild(list);
@@ -78,11 +64,9 @@
                 }
             });
         }
-
         function submitFilters(event) {
             event.preventDefault();
             let formData = new FormData(document.getElementById("filterForm"));
-
             fetch("/filter", {
                 method: "POST",
                 body: formData
@@ -91,7 +75,6 @@
             .then(data => {
                 let resultsDiv = document.getElementById("results");
                 resultsDiv.innerHTML = "<h3>Matching Resumes:</h3>";
-
                 if (data.matching_resumes.length > 0) {
                     let list = document.createElement("ul");
                     data.matching_resumes.forEach(filename => {
@@ -108,7 +91,6 @@
                 }
             });
         }
-
         window.onload = updateSkills;
     </script>
 </head>
@@ -116,45 +98,32 @@
     <div class="banner">
         <h1>AI Resume Filter</h1>
     </div>
-
     <div class="container">
         <h2>Set Resume Filtering Criteria</h2>
         <form id="filterForm" onsubmit="submitFilters(event)">
             <label for="job_role">Select Job Role:</label>
             <select name="job_role" id="job_role" onchange="updateSkills()">
                 {% for role in roles.keys() %}
-                    <option value="{{ role }}">{{ role }}</option>
+                <option value="{{ role }}">{{ role }}</option>
                 {% endfor %}
             </select>
-            <br>
-
             <label for="gpa_cutoff">Minimum GPA:</label>
             <input type="number" name="gpa_cutoff" step="0.1" min="0" max="4.0" required>
-            <br>
-
             <label for="experience">Minimum Experience (years):</label>
             <input type="number" name="experience" min="0" required>
-            <br>
-
             <label>Must-Have Skills/Certifications:</label>
             <button type="button" class="dropdown-btn" onclick="toggleDropdown('must_have_container')">Select Must-Have Skills</button>
             <div id="must_have_container" class="dropdown-content" style="display: none;"></div>
-            <br>
-
             <label>Nice-to-Have Skills/Certifications:</label>
             <button type="button" class="dropdown-btn" onclick="toggleDropdown('nice_to_have_container')">Select Nice-to-Have Skills</button>
             <div id="nice_to_have_container" class="dropdown-content" style="display: none;"></div>
-            <br>
-
             <input type="submit" value="Apply Filters">
         </form>
-
         <h2>Upload Resumes</h2>
         <form id="uploadForm" onsubmit="uploadFiles(event)" enctype="multipart/form-data">
             <input type="file" name="resumes" multiple>
             <input type="submit" value="Upload">
         </form>
-
         <div id="uploadStatus"></div>
         <div id="results"></div>
     </div>
