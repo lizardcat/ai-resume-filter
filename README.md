@@ -1,33 +1,51 @@
-# AI-Based Resume Screening System
+# AI Resume Filter
 
-## Overview
-This resume filtering system helps recruiters screen job applications based on predefined criteria. It extracts skills, experience, and GPA from uploaded resumes and filters candidates based on must-have skills.
+A Flask-based web application that automatically filters resumes using AI-powered keyword extraction. The app evaluates uploaded resumes based on must-have and nice-to-have skills defined for various job roles.
+
+---
 
 ## Features
-- Upload resumes in **PDF, TXT, or DOCX** format.
-- Extracts **GPA, years of experience, and skills** automatically.
-- Uses **fuzzy matching** to ensure flexible skill filtering.
-- Responsive **Flask-based UI** with dropdown filters.
 
-## Technologies Used
-- **Python** (Backend processing)
-- **Flask** (Web framework)
-- **PyPDF2 & python-docx** (Resume parsing)
-- **FuzzyWuzzy** (Skill matching with flexible search)
-- **SQLite** (For storing uploaded resumes) *(Future enhancement)*
+- Upload multiple resumes (PDF or DOCX)
+- Filter candidates using selected must-have and nice-to-have skills
+- Uses spaCy for natural language processing
+- Dynamically configurable roles and skills
+- Generates human-readable explanations for filtering decisions
+- SQLite database for storing review results
 
-## Installation
+---
 
-### **1️. Clone the Repository**
-```sh
-git clone https://github.com/lizardcat/ai-resume-filter.git
-cd ai-resume-filter
-```
-### **2️. Install Dependencies**
-```sh
-pip install -r requirements.txt
-```
-### **3️. Run the Application** 
-```sh
-python app.py
-```
+## Tech Stack
+
+- **Backend**: Python, Flask
+- **Frontend**: HTML, Bootstrap, JavaScript
+- **AI/NLP**: spaCy
+- **Database**: SQLite (via SQLAlchemy)
+
+---
+
+## Setup Instructions
+
+1. **Clone the repository**  
+   ```bash
+   git clone https://github.com/your-username/ai_resume_filter.git
+   cd ai_resume_filter
+   ```
+
+2. **Create a virtual environment**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # or venv\Scripts\activate on Windows
+    ```
+
+3. **Install dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **Run the app**
+    ```bash
+    flask run
+    ```
+
+
