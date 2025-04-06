@@ -20,7 +20,7 @@ instance/
 *.db
 *.sqlite3
 
-# Uploads (if you don’t want to track resumes)
+# Uploads 
 uploads/
 
 # Logs
