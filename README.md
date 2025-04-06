@@ -48,4 +48,12 @@ A Flask-based web application that automatically filters resumes using AI-powere
     flask run
     ```
 
+---
+
+## Screenshots
+### 1. Upload Page
+![](assets/ai-resume-filter-1.png)
+
+### 2. Screening Results Page
+![](assets/ai-resume-filter-2.png)
 
