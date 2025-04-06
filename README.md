@@ -43,4 +43,3 @@ Then open [http://localhost:5000](http://localhost:5000) in your browser.
 - Resume match results are stored in `reviews.db`
 - Uploaded resumes go to the `uploads/` folder
 - Make sure Ollama is running and the LLaMA 2 model is loaded before using the app
-- The `.env` file is no longer required for this version since OpenAI is not used
