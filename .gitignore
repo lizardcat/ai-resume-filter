@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Flask cache files
+instance/
+*.pyc
+
+# IDEs and editors
+.vscode/
+.idea/
+
+# SQLite database
+*.db
+*.sqlite3
+
+# Uploads (if you don’t want to track resumes)
+uploads/
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+Thumbs.db

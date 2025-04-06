@@ -1,244 +1,89 @@
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask_sqlalchemy import SQLAlchemy
+from models import db, ResumeReview, Role
+from parser import extract_resume_text
+import spacy
 import os
-import re
-import PyPDF2
-import docx
-from flask import Flask, render_template, request, send_from_directory, jsonify
 from werkzeug.utils import secure_filename
-from fuzzywuzzy import fuzz
 
-app = Flask(__name__)
-
-UPLOAD_FOLDER = "uploads"
-ALLOWED_EXTENSIONS = {"pdf", "txt", "docx"}
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
+UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Function to check allowed file types
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reviews.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
-filtering_rules = {
-    "Software Engineer": {
-        "must_have": ["Java", "Spring Boot", "Git", "REST APIs", "Agile", "Unit Testing"],
-        "nice_to_have": ["Docker", "Kubernetes", "Microservices", "CI/CD", "GraphQL", "React"],
-        "gpa_cutoff": 3.2,
-        "min_experience": 2
-    },
-    "Frontend Developer": {
-        "must_have": ["HTML", "CSS", "JavaScript", "React"],
-        "nice_to_have": ["Vue.js", "Angular", "Figma"],
-        "gpa_cutoff": 3.0,
-        "min_experience": 1
-    },
-    "Backend Developer": {
-        "must_have": ["Node.js", "Express", "SQL", "NoSQL"],
-        "nice_to_have": ["GraphQL", "Redis", "Docker"],
-        "gpa_cutoff": 3.2,
-        "min_experience": 2
-    },
-    "Full Stack Developer": {
-        "must_have": ["JavaScript", "React", "Node.js", "MongoDB"],
-        "nice_to_have": ["GraphQL", "Docker", "AWS"],
-        "gpa_cutoff": 3.2,
-        "min_experience": 2
-    },
-    "Mobile App Developer": {
-        "must_have": ["Flutter", "React Native", "Kotlin", "Swift"],
-        "nice_to_have": ["Firebase", "GraphQL", "CI/CD"],
-        "gpa_cutoff": 3.2,
-        "min_experience": 2
-    },
-    "Data Analyst": {
-        "must_have": ["SQL", "Python", "Excel", "Data Visualization", "ETL", "R"],
-        "nice_to_have": ["Tableau", "Power BI", "Statistics", "Google Analytics", "Machine Learning"],
-        "gpa_cutoff": 3.0,
-        "min_experience": 1
-    },
-    "Data Scientist": {
-        "must_have": ["Python", "Pandas", "Machine Learning"],
-        "nice_to_have": ["Deep Learning", "TensorFlow", "PyTorch"],
-        "gpa_cutoff": 3.5,
-        "min_experience": 2
-    },
-    "Business Intelligence Analyst": {
-        "must_have": ["SQL", "Tableau", "Power BI"],
-        "nice_to_have": ["Python", "Excel", "Google Data Studio"],
-        "gpa_cutoff": 3.0,
-        "min_experience": 1
-    },
-    "Cloud Engineer": {
-        "must_have": ["AWS", "Terraform", "Networking", "Kubernetes", "Linux", "Cloud Security"],
-        "nice_to_have": ["Azure", "GCP", "DevOps", "CI/CD", "Ansible"],
-        "gpa_cutoff": 3.5,
-        "min_experience": 2
-    },
-    "Site Reliability Engineer (SRE)": {
-        "must_have": ["Linux", "Cloud", "Monitoring Tools"],
-        "nice_to_have": ["Prometheus", "Grafana", "CI/CD"],
-        "gpa_cutoff": 3.3,
-        "min_experience": 2
-    },
-    "IT Support Specialist": {
-        "must_have": ["Troubleshooting", "Networking", "Windows/Linux"],
-        "nice_to_have": ["AWS", "Cybersecurity Fundamentals"],
-        "gpa_cutoff": 2.8,
-        "min_experience": 1
-    },
-    "Cybersecurity Analyst": {
-        "must_have": ["Network Security", "SIEM", "Penetration Testing", "Ethical Hacking", "Incident Response"],
-        "nice_to_have": ["CISSP", "SOC Analysis", "Cloud Security", "Red Teaming", "Risk Assessment"],
-        "gpa_cutoff": 3.3,
-        "min_experience": 2
-    },
-    "Ethical Hacker (Penetration Tester)": {
-        "must_have": ["Penetration Testing", "Kali Linux", "Burp Suite"],
-        "nice_to_have": ["OSCP", "Bug Bounty Experience"],
-        "gpa_cutoff": 3.2,
-        "min_experience": 2
-    },
-    "Security Engineer": {
-        "must_have": ["Cloud Security", "IAM", "SOC"],
-        "nice_to_have": ["AWS Security", "Zero Trust Security"],
-        "gpa_cutoff": 3.4,
-        "min_experience": 3
-    },
-    "Product Manager": {
-        "must_have": ["Agile", "Scrum", "Market Research", "Stakeholder Management", "JIRA"],
-        "nice_to_have": ["A/B Testing", "SQL", "User Experience", "Lean Methodology"],
-        "gpa_cutoff": 3.0,
-        "min_experience": 2
-    },
-    "UI/UX Designer": {
-        "must_have": ["Figma", "Sketch", "Wireframing"],
-        "nice_to_have": ["Prototyping", "User Testing"],
-        "gpa_cutoff": 3.0,
-        "min_experience": 1
-    },
-    "Business Analyst": {
-        "must_have": ["Requirements Gathering", "Process Mapping", "Stakeholder Communication", "SQL", "Business Intelligence"],
-        "nice_to_have": ["Tableau", "Power BI", "Google Analytics", "R", "Financial Modeling"],
-        "gpa_cutoff": 3.2,
-        "min_experience": 2
-    },
-    "IT Project Manager": {
-        "must_have": ["Agile", "Project Management", "JIRA"],
-        "nice_to_have": ["PMP Certification", "Scrum Master"],
-        "gpa_cutoff": 3.2,
-        "min_experience": 3
-    },
-    "Digital Marketing Specialist": {
-        "must_have": ["SEO", "Google Ads", "Content Marketing"],
-        "nice_to_have": ["Social Media Marketing", "Growth Hacking"],
-        "gpa_cutoff": 3.0,
-        "min_experience": 1
-    },
-    "Machine Learning Engineer": {
-        "must_have": ["Python", "TensorFlow", "Scikit-Learn", "Deep Learning", "Big Data", "Feature Engineering"],
-        "nice_to_have": ["PyTorch", "Data Science", "Cloud ML", "MLOps", "Natural Language Processing"],
-        "gpa_cutoff": 3.5,
-        "min_experience": 2
-    }
-}
+db.init_app(app)
+nlp = spacy.load("en_core_web_sm")
 
-# Function to extract text from resumes
-def extract_text_from_resume(filepath):
-    file_ext = filepath.rsplit(".", 1)[1].lower()
-    text = ""
+def skill_match(resume_text, required_skills):
+    doc = nlp(resume_text.lower())
+    tokens = set([token.text for token in doc if not token.is_stop])
+    return [skill for skill in required_skills if skill.lower() in tokens]
 
-    if file_ext == "pdf":
-        with open(filepath, "rb") as pdf_file:
-            reader = PyPDF2.PdfReader(pdf_file)
-            for page in reader.pages:
-                text += page.extract_text() + "\n"
-
-    elif file_ext == "docx":
-        doc = docx.Document(filepath)
-        for para in doc.paragraphs:
-            text += para.text + "\n"
-
-    elif file_ext == "txt":
-        with open(filepath, "r", encoding="utf-8") as txt_file:
-            text = txt_file.read()
-
-    return text.strip()
-
-# Function to extract details from resumes
-def extract_resume_details(text):
-    gpa_match = re.search(r"GPA[: ]?(\d\.\d)", text, re.IGNORECASE)
-    experience_match = re.search(r"(\d+)\s*years? of experience", text, re.IGNORECASE)
-    skills_match = re.findall(r"\b[A-Za-z+#]+\b", text)
-
-    gpa = float(gpa_match.group(1)) if gpa_match else 0.0
-    experience = int(experience_match.group(1)) if experience_match else 0
-    skills = [skill.lower() for skill in skills_match]
-
-    return {"gpa": gpa, "experience": experience, "skills": skills}
-
-@app.route("/")
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template("filters.html", roles=filtering_rules)
+    roles = Role.query.all()
 
-@app.route("/upload", methods=["POST"])
-def upload_file():
-    uploaded_files = request.files.getlist("resumes")
-    upload_results = []
+    if request.method == 'POST':
+        files = request.files.getlist('resumeFiles')
+        selected_role = request.form.get('role')
+        selected_must_have = request.form.getlist('selected_must_have')
+        selected_nice_to_have = request.form.getlist('selected_nice_to_have')
 
-    for file in uploaded_files:
-        if file.filename:
+        role = Role.query.filter_by(name=selected_role).first()
+
+        # Use selected skills or fall back to the full role defaults
+        must_have_skills = selected_must_have if selected_must_have else role.must_have.split(",")
+        nice_to_have_skills = selected_nice_to_have if selected_nice_to_have else role.nice_to_have.split(",")
+
+        reviews = []
+        for file in files:
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            upload_results.append({"filename": filename, "status": "Uploaded successfully!"})
-        else:
-            upload_results.append({"filename": "Unknown", "status": "Failed to upload"})
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
 
-    return jsonify({"uploads": upload_results})
+            resume_text = extract_resume_text(file)
+            if not resume_text:
+                continue
 
-@app.route("/filter", methods=["POST"])
-def filter_resumes():
-    gpa_cutoff = float(request.form.get("gpa_cutoff", 0))
-    experience_cutoff = int(request.form.get("experience", 0))
-    must_have = [skill.lower() for skill in request.form.getlist("must_have")]
+            matched_must = skill_match(resume_text, must_have_skills)
+            matched_nice = skill_match(resume_text, nice_to_have_skills)
 
-    print("Filtering Resumes...")  # Debugging message
-    print(f"Must-Have Skills: {must_have}")
-    print(f"GPA Cutoff: {gpa_cutoff}, Experience Cutoff: {experience_cutoff}")
+            score = len(matched_must) / len(must_have_skills) if must_have_skills else 0
+            explanation = (
+                f"{filename} meets {len(matched_must)} of {len(must_have_skills)} must-have skills"
+                f" ({', '.join(matched_must)}) and also has these nice-to-have skills: {', '.join(matched_nice)}."
+            )
 
-    matching_resumes = []
-    for filename in os.listdir(UPLOAD_FOLDER):
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        resume_text = extract_text_from_resume(filepath)
-        resume_details = extract_resume_details(resume_text)
+            review = ResumeReview(
+                resume_text=resume_text,
+                role=selected_role,
+                score=score,
+                explanation=explanation,
+                filename=filename
+            )
+            db.session.add(review)
+            reviews.append(review)
 
-        extracted_skills = [skill.lower() for skill in resume_details["skills"]]
-        extracted_gpa = resume_details["gpa"]
-        extracted_experience = resume_details["experience"]
+        db.session.commit()
+        return render_template('results.html', reviews=reviews)
 
-        print(f"\nProcessing Resume: {filename}")
-        print(f"Extracted GPA: {extracted_gpa}, Extracted Experience: {extracted_experience}")
-        print(f"Extracted Skills: {extracted_skills}")
+    # Prepare role data for frontend JS
+    role_data = {
+        role.name: {
+            "must_have": [skill.strip() for skill in role.must_have.split(",")],
+            "nice_to_have": [skill.strip() for skill in role.nice_to_have.split(",")]
+        } for role in roles
+    }
+    return render_template('index.html', roles=roles, role_data=role_data)
 
-        # Check GPA & experience
-        meets_gpa = extracted_gpa >= gpa_cutoff
-        meets_experience = extracted_experience >= experience_cutoff
 
-        # Fuzzy matching for must-have skills
-        has_must_have_skills = all(
-            any(fuzz.partial_ratio(skill, extracted_skill) > 80 for extracted_skill in extracted_skills)
-            for skill in must_have
-        )
+@app.route('/uploads/<filename>')
+def download_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-        print(f"Meets GPA: {meets_gpa}, Meets Experience: {meets_experience}, Has Must-Have Skills: {has_must_have_skills}")
-
-        if meets_gpa and meets_experience and has_must_have_skills:
-            matching_resumes.append(filename)
-
-    print(f"\nMatching Resumes: {matching_resumes}")
-    return jsonify({"matching_resumes": matching_resumes})
-
-@app.route("/uploads/<filename>")
-def uploaded_file(filename):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=True)
