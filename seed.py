@@ -1,8 +1,7 @@
+from db import engine, SessionLocal
+from models import Base, Role
 
-from models import db, Role
-from app import app
-
-role_data = {
+role_data =  {
     "Software Engineer": {
         "must_have": ["Java", "Spring Boot", "Git", "REST APIs", "Agile", "Unit Testing"],
         "nice_to_have": ["Docker", "Kubernetes", "Microservices", "CI/CD", "GraphQL", "React"]
@@ -85,15 +84,19 @@ role_data = {
     }
 }
 
-with app.app_context():
-    db.drop_all()
-    db.create_all()
-    for role_name, skills in role_data.items():
-        role = Role(
-            name=role_name,
-            must_have=",".join(skills["must_have"]),
-            nice_to_have=",".join(skills["nice_to_have"])
-        )
-        db.session.add(role)
-    db.session.commit()
-    print("✅ Roles seeded successfully.")
+Base.metadata.drop_all(bind=engine)
+Base.metadata.create_all(bind=engine)
+
+session = SessionLocal()
+
+for role_name, skills in role_data.items():
+    role = Role(
+        name=role_name,
+        must_have=",".join(skills["must_have"]),
+        nice_to_have=",".join(skills["nice_to_have"])
+    )
+    session.add(role)
+
+session.commit()
+session.close()
+print("✅ Roles seeded successfully.")

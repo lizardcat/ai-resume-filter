@@ -1,89 +1,128 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
-from models import db, ResumeReview, Role
+import streamlit as st
 from parser import extract_resume_text
 import spacy
+from db import SessionLocal
+from models import Role
+from sqlalchemy import select
 import os
-from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///reviews.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
-
-db.init_app(app)
+# Load spaCy model
 nlp = spacy.load("en_core_web_sm")
 
+# Database connection
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Skill matching function
 def skill_match(resume_text, required_skills):
     doc = nlp(resume_text.lower())
     tokens = set([token.text for token in doc if not token.is_stop])
     return [skill for skill in required_skills if skill.lower() in tokens]
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    roles = Role.query.all()
+# Streamlit app
+st.title("AI Resume Filter")
+st.subheader("Streamline your hiring process with AI-powered resume screening.")
 
-    if request.method == 'POST':
-        files = request.files.getlist('resumeFiles')
-        selected_role = request.form.get('role')
-        selected_must_have = request.form.getlist('selected_must_have')
-        selected_nice_to_have = request.form.getlist('selected_nice_to_have')
+# Sidebar description
+st.sidebar.title("About the App")
+st.sidebar.info(
+    """
+    **AI Resume Filter** helps recruiters and hiring managers streamline the resume screening process. 
+    Upload resumes in PDF or DOCX format, select a job role, and the app will:
+    
+    - Match resumes against must-have and nice-to-have skills for the selected role.
+    - Provide a compatibility score for each resume.
+    - Highlight matched skills for better decision-making.
+    
+    This tool leverages **Natural Language Processing (NLP)** and a database of predefined roles and skills.
+    """
+)
 
-        role = Role.query.filter_by(name=selected_role).first()
+# Database session
+db = next(get_db())
 
-        # Use selected skills or fall back to the full role defaults
-        must_have_skills = selected_must_have if selected_must_have else role.must_have.split(",")
-        nice_to_have_skills = selected_nice_to_have if selected_nice_to_have else role.nice_to_have.split(",")
+# Fetch roles from the database
+roles = db.execute(select(Role)).scalars().all()
+role_names = [role.name for role in roles]
 
-        reviews = []
-        for file in files:
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
+# Role selection
+st.markdown("### Select a Job Role")
+selected_role = st.selectbox("Select Job Role", ["-- Select a role --"] + role_names)
 
-            resume_text = extract_resume_text(file)
-            if not resume_text:
-                continue
+if selected_role and selected_role != "-- Select a role --":
+    # Fetch role details
+    role = db.execute(select(Role).where(Role.name == selected_role)).scalar_one()
+    must_have_skills = role.must_have.split(",")
+    nice_to_have_skills = role.nice_to_have.split(",")
 
-            matched_must = skill_match(resume_text, must_have_skills)
-            matched_nice = skill_match(resume_text, nice_to_have_skills)
+    # Display skills for selection
+    st.markdown("### Customize Skills")
+    col1, col2 = st.columns(2)
+    with col1:
+        selected_must_have = st.multiselect("Must-Have Skills", must_have_skills, default=must_have_skills)
+    with col2:
+        selected_nice_to_have = st.multiselect("Nice-to-Have Skills", nice_to_have_skills, default=nice_to_have_skills)
 
-            score = len(matched_must) / len(must_have_skills) if must_have_skills else 0
-            explanation = (
-                f"{filename} meets {len(matched_must)} of {len(must_have_skills)} must-have skills"
-                f" ({', '.join(matched_must)}) and also has these nice-to-have skills: {', '.join(matched_nice)}."
-            )
+    # File upload
+    st.markdown("### Upload Resumes")
+    uploaded_files = st.file_uploader("Upload Resumes (PDF or DOCX)", type=["pdf", "docx"], accept_multiple_files=True)
 
-            review = ResumeReview(
-                resume_text=resume_text,
-                role=selected_role,
-                score=score,
-                explanation=explanation,
-                filename=filename
-            )
-            db.session.add(review)
-            reviews.append(review)
+    if st.button("Filter Resumes"):
+        if uploaded_files:
+            reviews = []
+            progress_bar = st.progress(0)
+            for i, file in enumerate(uploaded_files):
+                resume_text = extract_resume_text(file)
+                if not resume_text:
+                    st.warning(f"Could not parse {file.name}. Skipping.")
+                    continue
 
-        db.session.commit()
-        return render_template('results.html', reviews=reviews)
+                matched_must = skill_match(resume_text, selected_must_have)
+                matched_nice = skill_match(resume_text, selected_nice_to_have)
 
-    # Prepare role data for frontend JS
-    role_data = {
-        role.name: {
-            "must_have": [skill.strip() for skill in role.must_have.split(",")],
-            "nice_to_have": [skill.strip() for skill in role.nice_to_have.split(",")]
-        } for role in roles
-    }
-    return render_template('index.html', roles=roles, role_data=role_data)
+                score = len(matched_must) / len(selected_must_have) if selected_must_have else 0
+                explanation = (
+                    f"{file.name} meets {len(matched_must)} of {len(selected_must_have)} must-have skills"
+                    f" ({', '.join(matched_must)}) and also has these nice-to-have skills: {', '.join(matched_nice)}."
+                )
 
+                reviews.append({
+                    "filename": file.name,
+                    "score": round(score * 100, 2),
+                    "explanation": explanation
+                })
 
-@app.route('/uploads/<filename>')
-def download_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+                progress_bar.progress((i + 1) / len(uploaded_files))
 
-if __name__ == '__main__':
-    app.run(debug=True)
+            # Display results
+            st.subheader("Screening Results")
+            for i, review in enumerate(reviews):
+                with st.expander(f"**{review['filename']}** - Score: {review['score']}%"):
+                    st.write(f"**Explanation:** {review['explanation']}")
+                    # Directly display the resume content in a text area
+                    file = uploaded_files[i]
+                    file.seek(0)  # Reset file pointer to the beginning
+                    resume_text = extract_resume_text(file)
+                    if resume_text:
+                        st.markdown("### Resume Content")
+                        st.text_area(
+                            label=f"Content of {review['filename']}",
+                            value=resume_text,  # Display the parsed resume text
+                            height=300,
+                            key=f"content_{i}"
+                        )
+                    else:
+                        st.warning(f"Could not parse the content of {review['filename']}.")
+                st.write("---")
+        else:
+            st.warning("Please upload at least one resume.")
+else:
+    st.info("Please select a job role to begin.")
+
+# Footer
+st.markdown("---")
+st.markdown("**Developed by Raza, Shirllie, Paul and Hamisi** | Powered by Streamlit and spaCy")

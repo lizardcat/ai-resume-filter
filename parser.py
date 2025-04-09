@@ -1,4 +1,3 @@
-
 import docx
 import fitz  # PyMuPDF
 
@@ -16,9 +15,20 @@ def parse_pdf(file):
 
 
 def extract_resume_text(file):
-    filename = file.filename.lower()
+    filename = file.name.lower()  # Use file.name instead of file.filename
+    print(f"Processing file: {filename}")  # Debugging: Print the filename
     if filename.endswith('.pdf'):
-        return parse_pdf(file)
+        try:
+            return parse_pdf(file)
+        except Exception as e:
+            print(f"Error parsing PDF: {e}")  # Debugging: Print error
+            return None
     elif filename.endswith('.docx'):
-        return parse_docx(file)
-    return None
+        try:
+            return parse_docx(file)
+        except Exception as e:
+            print(f"Error parsing DOCX: {e}")  # Debugging: Print error
+            return None
+    else:
+        print("Unsupported file type")  # Debugging: Print unsupported file type
+        return None
