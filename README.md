@@ -32,7 +32,7 @@ A Flask-based web application that automatically filters resumes using AI-powere
    cd ai_resume_filter
    ```
 
-2. **Create a virtual environment**
+2. **Create a virtual environment (Optional but recommended)**
     ```bash
     python -m venv venv
     source venv/bin/activate  # or venv\Scripts\activate on Windows
@@ -43,9 +43,14 @@ A Flask-based web application that automatically filters resumes using AI-powere
     pip install -r requirements.txt
     ```
 
+3. **Seed the database**
+    ```bash
+    python seed.py
+    ```
+
 4. **Run the app**
     ```bash
-    flask run
+    python app.py
     ```
 
 ---
