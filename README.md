@@ -58,11 +58,11 @@ A Streamlit-based web application that automatically filters resumes using AI-po
 ---
 
 ## Screenshots
-### 1. Upload Page
-![](assets/ai-resume-filter-1.png)
+### 1. landing Page
+![](assets/landing_page(static).png)
 
 ### 2. Screening Results Page
-![](assets/ai-resume-filter-2.png)
+![](assets/running_app.png)
 
 ---
 
