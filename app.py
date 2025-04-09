@@ -112,4 +112,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.markdown("**Developed by Raza Shirlie Paul Hamisi** | Powered by Streamlit and spaCy")
+st.markdown("**Developed by Raza, Shirllie, Paul and Hamisi** | Powered by Streamlit and spaCy")
