@@ -32,8 +32,8 @@ role_data = {
         "nice_to_have": ["Deep Learning", "TensorFlow", "PyTorch"]
     },
     "Business Intelligence Analyst": {
-        "must_have": ["SQL", "Tableau", "Power BI"],
-        "nice_to_have": ["Python", "Excel", "Google Data Studio"]
+        "must_have": ["SQL", "Tableau", "Power BI", "Data Warehousing", "ETL"],
+        "nice_to_have": ["Python", "Excel", "Google Data Studio", "R"]
     },
     "Cloud Engineer": {
         "must_have": ["AWS", "Terraform", "Networking", "Kubernetes", "Linux", "Cloud Security"],
