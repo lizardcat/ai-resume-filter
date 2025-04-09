@@ -1,17 +1,19 @@
-from flask_sqlalchemy import SQLAlchemy
+# models.py
+from sqlalchemy import Column, Integer, String, Text, Float
+from db import Base
 
-db = SQLAlchemy()
+class ResumeReview(Base):
+    __tablename__ = 'resume_reviews'
+    id = Column(Integer, primary_key=True)
+    resume_text = Column(Text, nullable=False)
+    role = Column(String(100), nullable=False)
+    score = Column(Float, nullable=False)
+    explanation = Column(Text, nullable=False)
+    filename = Column(String(120))
 
-class ResumeReview(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    resume_text = db.Column(db.Text, nullable=False)
-    role = db.Column(db.String(100), nullable=False)
-    score = db.Column(db.Float, nullable=False)
-    explanation = db.Column(db.Text, nullable=False)
-    filename = db.Column(db.String(120))
-
-class Role(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
-    must_have = db.Column(db.Text, nullable=False)
-    nice_to_have = db.Column(db.Text, nullable=False)
+class Role(Base):
+    __tablename__ = 'roles'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), unique=True, nullable=False)
+    must_have = Column(Text, nullable=False)
+    nice_to_have = Column(Text, nullable=False)
