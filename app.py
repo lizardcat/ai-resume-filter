@@ -100,10 +100,23 @@ if selected_role and selected_role != "-- Select a role --":
 
             # Display results
             st.subheader("Screening Results")
-            for review in reviews:
-                st.write(f"**{review['filename']}**")
-                st.write(f"Score: {review['score']}%")
-                st.write(f"Explanation: {review['explanation']}")
+            for i, review in enumerate(reviews):
+                with st.expander(f"**{review['filename']}** - Score: {review['score']}%"):
+                    st.write(f"**Explanation:** {review['explanation']}")
+                    # Directly display the resume content in a text area
+                    file = uploaded_files[i]
+                    file.seek(0)  # Reset file pointer to the beginning
+                    resume_text = extract_resume_text(file)
+                    if resume_text:
+                        st.markdown("### Resume Content")
+                        st.text_area(
+                            label=f"Content of {review['filename']}",
+                            value=resume_text,  # Display the parsed resume text
+                            height=300,
+                            key=f"content_{i}"
+                        )
+                    else:
+                        st.warning(f"Could not parse the content of {review['filename']}.")
                 st.write("---")
         else:
             st.warning("Please upload at least one resume.")
