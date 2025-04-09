@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#6B4226"  # Earthy brown
+backgroundColor = "#F5F5DC"  # Beige
+secondaryBackgroundColor = "#D2B48C"  # Tan
+textColor = "#3E2723"  # Dark brown
+font = "sans serif"

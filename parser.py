@@ -1,4 +1,3 @@
-
 import docx
 import fitz  # PyMuPDF
 
@@ -14,9 +13,8 @@ def parse_pdf(file):
             text += page.get_text()
         return text
 
-
 def extract_resume_text(file):
-    filename = file.filename.lower()
+    filename = file.name.lower()  # Use file.name instead of file.filename
     if filename.endswith('.pdf'):
         return parse_pdf(file)
     elif filename.endswith('.docx'):
