@@ -51,7 +51,6 @@ A Streamlit-based web application that automatically filters resumes using AI-po
 
 5. **Run the app**
     ```bash
-    venv\Scripts\activate #to activate the venv first
     streamlit run app.py
     ```
 
@@ -82,7 +81,4 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 
 ---
 
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
 
